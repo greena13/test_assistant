@@ -84,10 +84,40 @@ RSpec.describe 'making some valid request', type: :request do
 end
 ```
 
+## Email expectations
+
+
+```ruby
+TestAssistant.configure(config) do |ta_config|
+  ta_config.include_email_helpers type: :request
+end
+```
+
+```ruby
+RSpec.describe 'making some valid request', type: :request do
+  context 'some important context' do
+    it 'should send an email' do
+      expect(email).to have_been_sent
+                          .to('user@email.com')
+                          .from('admin@site.com')
+                          .with_subject('Welcome!')
+                          .with_text('Welcome, user@email.com').and('Thanks for signing up')
+                          .with_selector('#password').and('#username')
+                          .with_link('www.site.com/onboarding/1')
+                          .with_image('www.site.com/assets/images/welcome.png')
+    end
+  end
+end
+```
+
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/test_assistant/fork )
+1. Fork it ( https://github.com/greena13/test_assistant/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+## Inspirations
+
+* [CapybaraEmail](https://github.com/DockYard/capybara-email)
