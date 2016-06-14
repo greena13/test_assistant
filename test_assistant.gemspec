@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "rspec-rails", "~> 3.0"
   spec.add_dependency 'capybara', '~> 2.5', '>= 2.5.0'
+  spec.add_dependency 'hashdiff', '~> 0'
   spec.add_development_dependency "bundler", "~> 1.6"
   spec.add_development_dependency "rake", "~> 0"
 end

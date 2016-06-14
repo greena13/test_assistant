@@ -1,5 +1,5 @@
 module TestAssistant
-  autoload :JSONHelpers, 'test_assistant/json_helpers'
+  autoload :Json, 'test_assistant/json/helpers'
   autoload :Email, 'test_assistant/email/helpers'
   autoload :FailureReporter, 'test_assistant/failure_reporter'
 
@@ -9,7 +9,7 @@ module TestAssistant
     end
 
     def include_json_helpers(options = {})
-      @rspec_config.include JSONHelpers, options
+      @rspec_config.include Json::Helpers, options
     end
 
     def include_email_helpers(options = {})
