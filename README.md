@@ -105,6 +105,12 @@ RSpec.describe 'making some valid request', type: :request do
                           .with_selector('#password').and('#username')
                           .with_link('www.site.com/onboarding/1')
                           .with_image('www.site.com/assets/images/welcome.png')
+                          
+      clear_emails
+      
+      # further actions
+      
+      expect(email).to have_been_sent.to('user@email.com')
     end
   end
 end

@@ -6,6 +6,10 @@ module TestAssistant::Email
       ActionMailer::Base.deliveries
     end
 
+    def clear_emails
+      ActionMailer::Base.deliveries = []
+    end
+
     def have_been_sent
       TestAssistant::Email::Expectation.new
     end
