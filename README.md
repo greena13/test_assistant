@@ -1,6 +1,6 @@
 # TestAssistant
 
-A collection of testing tools, hacks, and utilities for writing and fixing tests faster
+A collection of testing tools and utilities for writing and fixing tests faster
 
 ## Stability
 
@@ -79,6 +79,45 @@ RSpec.describe 'making some valid request', type: :request do
   context 'some important context' do
     it 'should return a correct result', debugger: true do
       # failing assertions
+    end
+  end
+end
+```
+
+## JSON expectations
+
+RSpec's failed equality reports are often extremely difficult to interpret when dealing with complicated JSON objects. A minor difference, deeply nested in arrays and objects can take a long time to locate because RSpec dumps the entire object in the failure message.
+ 
+
+When enabled, Test Assistant provides a method `json_response` that automatically parses the last response object as json and a custom assertion `eql_json` that reports failed equality of complicated json objects in a format that is much clearer. The full `expected` and `actual` values are still reported, but below them Test Assistant prints only the paths to the failed nested values and their differences, removing the need to manually compare the two complete objects to find what is different. 
+
+```ruby
+TestAssistant.configure(config) do |ta_config|
+  ta_config.include_json_helpers type: :request
+end
+```
+
+```ruby
+RSpec.describe 'making some valid request', type: :request do
+  context 'some important context' do
+    it 'should return some complicated JSON' do
+      
+      perform_request
+      
+      expect(json_response).to eql_json([
+        {
+            "a" => [
+                1, 2, 3
+           ],
+           "c" => { "d" => "d'"}
+        }, 
+        {
+            "b" => [
+                1, 2, 3
+           ],
+           "c" => { "d" => "d'"}
+        } 
+      ])
     end
   end
 end

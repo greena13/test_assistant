@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Aleck Greenham"]
   spec.email         = ["greenhama13@gmail.com"]
   spec.summary       = "A toolbox for increased testing efficiency with RSpec"
-  spec.description   = "A collection of testing tools, hacks, and utilities for writing and fixing tests faster"
+  spec.description   = "A collection of testing tools and utilities for writing and fixing tests faster"
   spec.homepage      = "https://github.com/greena13/test_assistant"
   spec.license       = "MIT"
 
