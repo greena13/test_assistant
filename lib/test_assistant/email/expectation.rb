@@ -2,6 +2,7 @@ require 'capybara/rspec'
 
 module TestAssistant::Email
   class Expectation
+
     def initialize
       @expectations = {}
       @failure_message = 'Expected email to be sent'
@@ -16,7 +17,7 @@ module TestAssistant::Email
             match: ->(_, email, value){ value.all?{|text| email.has_content?(text) }},
             actual: ->(_, email){ email.text}
         },
-        with_selector: {
+        matching_selector: {
             match: ->(_, email, value){ value.all?{|text| email.has_selector?(text) }},
             actual: ->(_, email){ email.native },
             actual_name: :with_body
@@ -55,11 +56,10 @@ module TestAssistant::Email
     end
 
     def from(email_address)
-      if email_address.kind_of?(Array)
-        @expectations[:from] = email_address
+      if @expectations[:from]
+        raise ArgumentError('An email can only have one from address, but you tried to assert the presence of 2 or more values')
       else
-        @expectations[:from] ||= []
-        @expectations[:from] << email_address
+        @expectations[:from] = email_address
       end
 
       @and_scope = :from
@@ -74,6 +74,8 @@ module TestAssistant::Email
         @expectations[:with_subject] = subject
       end
 
+      @and_scope = :with_subject
+
       self
     end
 
@@ -85,11 +87,11 @@ module TestAssistant::Email
       self
     end
 
-    def with_selector(selector)
-      @expectations[:with_selector] ||= []
-      @expectations[:with_selector].push(selector)
+    def matching_selector(selector)
+      @expectations[:matching_selector] ||= []
+      @expectations[:matching_selector].push(selector)
 
-      @and_scope = :with_selector
+      @and_scope = :matching_selector
       self
     end
 
@@ -118,70 +120,169 @@ module TestAssistant::Email
 
       matching_emails = @emails
 
-      @expectations.each do |attribute, expected|
-
-        matching_emails =
-            matching_emails.select do |email|
-              email_matches?(email, MATCHERS[attribute], expected)
-            end
-
-        if matching_emails.empty?
+      if @expectations.any?
+        @expectations.each do |attribute, expected|
           @failed_attribute = attribute
           @failed_expected = expected
-          return false
-        end
-      end
 
-      true
+          matching_emails =
+              matching_emails.select do |email|
+                email_matches?(email, MATCHERS[attribute], expected)
+              end
+
+          if matching_emails.empty?
+            return false
+          end
+        end
+
+        true
+      else
+        @emails.any?
+      end
     end
 
     def failure_message
-      field_description = @failed_attribute.to_s.gsub('_', ' ')
-      value_description =
-          case @failed_expected
-            when String
-              "'#{@failed_expected}'"
-            when Array
-              @failed_expected.map{|val| "'#{val}'"}.to_sentence
-            else
-              @failed_expected
-          end
+      field_descs = attribute_descriptions
+      value_descs = value_descriptions
 
-      base_clause = "Expected an email to be sent #{field_description} #{value_description}."
+      base_clause = expectation_description(
+          'Expected an email to be sent',
+          field_descs,
+          value_descs
+      )
 
       if @emails.length == 0
-        base_clause + ' However, no emails were sent.'
+        "#{base_clause} However, no emails were sent."
       else
-        pluralisation = @emails.length == 1 ? 'email' : 'emails'
-
-        email_values = @emails.inject([]) do |memo, email|
-          matcher = MATCHERS[@failed_attribute]
-
-          value =
-              case matcher
-                when String, Symbol
-                  email.send(matcher)
-                when Hash
-                  field_description = matcher[:actual_name] if matcher[:actual_name]
-                  matcher[:actual].(email, parsed_emails(email))
-              end
-
-          value = value.kind_of?(String) ? "'#{value}'" : value
-          memo << value
-
-          memo
-        end
-
+        email_values = sent_email_values
 
         if email_values.any?
-          base_clause + " However, #{pluralisation} were sent #{field_description} #{email_values.to_sentence}"
+          base_clause + " However, #{email_pluralisation(@emails)} sent #{result_description(field_descs, [to_sentence(email_values)])}."
         else
           base_clause
         end
       end
     end
 
+    def result_description(field_descriptions, values)
+      to_sentence(
+        field_descriptions.map.with_index do |field_description, index|
+          value = values[index]
+
+          if [ 'matching selector', 'with link', 'with image' ].include?(field_description)
+            "with body #{value}"
+          else
+            "#{field_description} #{value}"
+          end
+        end
+      )
+    end
+
+    def failure_message_when_negated
+      field_descs = attribute_descriptions(negated: true)
+      value_descs = value_descriptions(negated: true)
+
+      expectation_description(
+          'Expected no emails to be sent',
+          field_descs,
+          value_descs
+      )
+    end
+
     private
+
+    def sent_email_values
+      @emails.inject([]) do |memo, email|
+
+        if [ :matching_selector, :with_link, :with_image ].include?(@failed_attribute)
+          memo << email_body(email)
+        else
+          matcher = MATCHERS[@failed_attribute]
+
+          value =
+              case matcher
+              when String, Symbol
+                email.send(matcher)
+              when Hash
+                field_description = matcher[:actual_name] if matcher[:actual_name]
+                matcher[:actual].(email, parsed_emails(email))
+              end
+
+          value = value.kind_of?(String) ? "'#{value}'" : value
+          memo << value
+        end
+
+        memo
+      end
+    end
+
+    def expectation_description(base_clause, field_descriptions, value_descriptions)
+      description = base_clause
+
+      additional_clauses = []
+
+      field_descriptions.each.with_index do |field_description, index|
+        clause = ''
+        clause += " #{field_description}" if field_description.length > 0
+
+        if (value_description = value_descriptions[index])
+          clause += " #{value_description}"
+        end
+
+        additional_clauses.push(clause) if clause.length > 0
+      end
+
+      description + additional_clauses.join('') + '.'
+    end
+
+    def attribute_descriptions(negated: false)
+      attributes_to_describe =
+          if negated
+            @expectations.keys
+          else
+            [ @failed_attribute ]
+          end
+
+      attributes_to_describe.map do |attribute|
+          attribute.to_s.gsub('_', ' ')
+      end
+    end
+
+    def value_descriptions(negated: false)
+      values_to_describe =
+          if negated
+            @expectations.values
+          else
+            [ @failed_expected ]
+          end
+
+      values_to_describe.map do |value|
+        case value
+        when String
+          "'#{value}'"
+        when Array
+          to_sentence(value.map{|val| "'#{val}'"})
+        else
+          value
+        end
+      end
+
+    end
+
+    def email_pluralisation(emails)
+      emails.length > 2 ? "#{emails.length} were": "1 was"
+    end
+
+    def to_sentence(items)
+      case items.length
+      when 0, 1
+        items.join('')
+      when 2
+        items.join(' and ')
+      else
+        items[0..(items.length-3)].join(', ') + items[(items.length-3)..items.length-1].join(' and ')
+      end
+    end
 
     def parsed_emails(email)
       @parsed_emails ||= {}
@@ -190,13 +291,19 @@ module TestAssistant::Email
     end
 
     def parser(email)
-      Capybara::Node::Simple.new(email.parts.first.body.decoded)
+      Capybara::Node::Simple.new(email_body(email))
+    end
+
+    def email_body(email)
+      email.parts.first.body.decoded
     end
 
     def email_matches?(email, assertion, expected)
       case assertion
+        when :to
+          expected.include?(email.send(assertion))
         when String, Symbol
-          email.send(assertion) == expected
+          expected == email.send(assertion)
         when Hash
           assertion[:match].(email, parsed_emails(email), expected)
         else
