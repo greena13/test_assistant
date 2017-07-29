@@ -104,6 +104,64 @@ RSpec.describe "eql_json" do
 
   end
 
+  context "when comparing arrays of objects" do
+    let(:expected) {
+      {
+          'alpha' => 'alpha',
+          'beta' => [ 1, 2, 3],
+          'gamma' => [
+              { 'i' => 'a', 'j' => 'b' },
+              { 'i' => 'c', 'j' => 'd' },
+              { 'i' => 'e', 'j' => 'f' },
+          ]
+      }
+    }
+
+    let(:actual) {
+      {
+          'alpha' => 'alpha',
+          'beta' => [ 1, 2, 3],
+          'gamma' => [
+              { 'j' => 'b' },
+              { 'i' => 'c', 'j' => 'D' },
+              { 'i' => 'e', 'j' => 'f', 'k' => 'k' },
+          ]
+      }
+    }
+
+    it "then correctly reports the elements that have changed" do
+
+      expect(actual).to eql(actual)
+
+      expect(actual).to_not eql(expected)
+
+      begin
+        expect(actual).to eql_json(expected)
+      rescue RSpec::Expectations::ExpectationNotMetError => e
+
+        expect(e.message).to eql(error_message(expected, actual, {
+
+          'gamma[0].i' => {
+              expected: "'a'",
+              actual: ''
+          },
+          'gamma[1].j' => {
+              expected: "'d'",
+              actual: "'D'"
+          },
+          'gamma[2].k' => {
+              expected: '',
+              actual: "'k'"
+          }
+
+        }))
+
+      end
+
+    end
+
+  end
+
   context "when comparing objects" do
     let(:expected) { {
         'a' => 'a',
