@@ -14,6 +14,10 @@ module TestAssistant
 
     def include_email_helpers(options = {})
       @rspec_config.include Email::Helpers, options
+
+      @rspec_config.after :each do
+        clear_emails
+      end
     end
 
     def render_failed_responses(options = {})
