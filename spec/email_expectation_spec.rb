@@ -84,26 +84,26 @@ RSpec.describe 'have_sent_email' do
 
     it "then a positive 'to' assertion passes" do
       expect {
-        expect(subject).to have_been_sent.to(subject[0].to)
+        expect(subject).to have_been_sent.to(subject[0].to[0])
       }.to_not raise_error
     end
 
     it "then a negative 'to' assertion fails" do
       expect {
-        expect(subject).to_not have_been_sent.to(subject[0].to)
-      }.to raise_error.with_message("Expected no emails to be sent to '#{subject[0].to}'.")
+        expect(subject).to_not have_been_sent.to(subject[0].to[0])
+      }.to raise_error.with_message("Expected no emails to be sent to '#{subject[0].to[0]}'.")
     end
 
     it "then a positive 'from' assertion passes" do
       expect {
-        expect(subject).to have_been_sent.from(subject[0].from)
+        expect(subject).to have_been_sent.from(subject[0].from[0])
       }.to_not raise_error
     end
 
     it "then a negative 'from' assertion fails" do
       expect {
-        expect(subject).to_not have_been_sent.from(subject[0].from)
-      }.to raise_error.with_message("Expected no emails to be sent from '#{subject[0].from}'.")
+        expect(subject).to_not have_been_sent.from(subject[0].from[0])
+      }.to raise_error.with_message("Expected no emails to be sent from '#{subject[0].from[0]}'.")
     end
 
     it "then a positive 'with_subject' assertion passes" do
@@ -173,7 +173,7 @@ RSpec.describe 'have_sent_email' do
     it "then a positive 'to' assertion fails" do
       expect {
         expect(subject).to have_been_sent.to('other@email.com')
-      }.to raise_error.with_message("Expected an email to be sent to 'other@email.com'. However, 1 was sent to '#{subject[0].to}'.")
+      }.to raise_error.with_message("Expected an email to be sent to 'other@email.com'. However, 1 was sent to '#{subject[0].to[0]}'.")
     end
 
     it "then a negative 'to' assertion passes" do
@@ -185,7 +185,7 @@ RSpec.describe 'have_sent_email' do
     it "then a positive 'from' assertion fails" do
       expect {
         expect(subject).to have_been_sent.from('other@email.com')
-      }.to raise_error.with_message("Expected an email to be sent from 'other@email.com'. However, 1 was sent from '#{subject[0].from}'.")
+      }.to raise_error.with_message("Expected an email to be sent from 'other@email.com'. However, 1 was sent from '#{subject[0].from[0]}'.")
     end
 
     it "then a negative 'from' assertion passes" do
@@ -260,14 +260,14 @@ RSpec.describe 'have_sent_email' do
 
     it "then a positive assertion matching the first email passes" do
       expect {
-        expect(subject).to have_been_sent.to(subject[0].to)
+        expect(subject).to have_been_sent.to(subject[0].to[0])
       }.to_not raise_error
     end
 
     it "then a negative assertion matching the first email fails" do
       expect {
-        expect(subject).to_not have_been_sent.to(subject[0].to)
-      }.to raise_error.with_message("Expected no emails to be sent to '#{subject[0].to}'.")
+        expect(subject).to_not have_been_sent.to(subject[0].to[0])
+      }.to raise_error.with_message("Expected no emails to be sent to '#{subject[0].to[0]}'.")
     end
 
     it "then a positive assertion matching the second email passes" do
@@ -279,7 +279,7 @@ RSpec.describe 'have_sent_email' do
     it "then a negative assertion matching the second email fails" do
       expect {
         expect(subject).to_not have_been_sent.to(subject[1].to)
-      }.to raise_error.with_message("Expected no emails to be sent to '#{subject[1].to}'.")
+      }.to raise_error.with_message("Expected no emails to be sent to '#{subject[1].to[0]}'.")
     end
 
   end
@@ -289,37 +289,37 @@ RSpec.describe 'have_sent_email' do
 
     it "then a positive assertions correctly matches a matching email" do
       expect {
-        expect(subject).to have_been_sent.to(subject[0].to).from(subject[0].from)
+        expect(subject).to have_been_sent.to(subject[0].to[0]).from(subject[0].from[0])
       }.to_not raise_error
     end
 
     it "then a positive assertions don't match an email if the first qualifier isn't satisfied" do
       expect {
-        expect(subject).to have_been_sent.to('other@email.com').from(subject[0].from)
-      }.to raise_error.with_message("Expected an email to be sent to 'other@email.com'. However, 1 was sent to '#{subject[0].to}'.")
+        expect(subject).to have_been_sent.to('other@email.com').from(subject[0].from[0])
+      }.to raise_error.with_message("Expected an email to be sent to 'other@email.com'. However, 1 was sent to '#{subject[0].to[0]}'.")
     end
 
     it "then a positive assertions don't match an email if the last qualifier isn't satisfied" do
       expect {
-        expect(subject).to have_been_sent.to(subject[0].to).from('other@email.com')
-      }.to raise_error.with_message("Expected an email to be sent from 'other@email.com'. However, 1 was sent from '#{subject[0].from}'.")
+        expect(subject).to have_been_sent.to(subject[0].to[0]).from('other@email.com')
+      }.to raise_error.with_message("Expected an email to be sent from 'other@email.com'. However, 1 was sent from '#{subject[0].from[0]}'.")
     end
 
     it "then a negative assertions correctly matches a matching email" do
       expect {
-        expect(subject).to_not have_been_sent.to(subject[0].to).from(subject[0].from)
-      }.to raise_error.with_message("Expected no emails to be sent to '#{subject[0].to}' from '#{subject[0].from}'.")
+        expect(subject).to_not have_been_sent.to(subject[0].to[0]).from(subject[0].from[0])
+      }.to raise_error.with_message("Expected no emails to be sent to '#{subject[0].to[0]}' from '#{subject[0].from[0]}'.")
     end
 
     it "then a negative assertions don't match an email if the first qualifier isn't satisfied" do
       expect {
-        expect(subject).to_not have_been_sent.to('other@email.com').from(subject[0].from)
+        expect(subject).to_not have_been_sent.to('other@email.com').from(subject[0].from[0])
       }.to_not raise_error
     end
 
     it "then a negative assertions don't match an email if the last qualifier isn't satisfied" do
       expect {
-        expect(subject).to_not have_been_sent.to(subject[0].to).from('other@email.com')
+        expect(subject).to_not have_been_sent.to(subject[0].to[0]).from('other@email.com')
       }.to_not raise_error
     end
   end

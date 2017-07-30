@@ -208,7 +208,7 @@ module TestAssistant::Email
                 matcher[:actual].(email, parsed_emails(email))
               end
 
-          value = value.kind_of?(String) ? "'#{value}'" : value
+          value = value.kind_of?(String) ? "'#{value}'" : value.map{|element| "'#{element}'"}
           memo << value
         end
 
@@ -299,11 +299,12 @@ module TestAssistant::Email
     end
 
     def email_matches?(email, assertion, expected)
+
       case assertion
         when :to
-          expected.include?(email.send(assertion))
+          (expected & email.send(assertion)).length > 0
         when String, Symbol
-          expected == email.send(assertion)
+          email.send(assertion).include?(expected)
         when Hash
           assertion[:match].(email, parsed_emails(email), expected)
         else
