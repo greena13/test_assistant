@@ -206,7 +206,7 @@ RSpec.describe 'have_sent_email' do
       }.to_not raise_error
     end
 
-    it "then a positive 'with_text' assertion fails"do
+    it "then a positive 'with_text' assertion fails" do
       expect {
         expect(subject).to have_been_sent.with_text('Other text')
       }.to raise_error.with_message("Expected an email to be sent with text 'Other text'. However, 1 was sent with text '#{subject[0].text}'.")
@@ -322,7 +322,48 @@ RSpec.describe 'have_sent_email' do
         expect(subject).to_not have_been_sent.to(subject[0].to).from('other@email.com')
       }.to_not raise_error
     end
+  end
+
+  context "when using the and method" do
+    subject { [ EmailMock.new ] }
+
+    it "then a positive assertion will fail if the first qualifier is not satisfied" do
+      expect {
+        expect(subject).to have_been_sent.with_text('Other').and('Email')
+      }.to raise_error.with_message("Expected an email to be sent with text 'Other' and 'Email'. However, 1 was sent with text '#{subject[0].text}'.")
+    end
+
+    it "then a positive assertion will fail if the second qualifier is not satisfied" do
+      expect {
+        expect(subject).to have_been_sent.with_text('Test').and('Other')
+      }.to raise_error.with_message("Expected an email to be sent with text 'Test' and 'Other'. However, 1 was sent with text '#{subject[0].text}'.")
+    end
+
+    it "then a positive assertion will pass if both qualifiers are satisfied" do
+      expect {
+        expect(subject).to have_been_sent.with_text('Test').and('Email')
+      }.to_not raise_error
+    end
+
+    it "then a negative assertion will pass if the first qualifier is not satisfied" do
+      expect {
+        expect(subject).to_not have_been_sent.with_text('Other').and('Email')
+      }.to_not raise_error
+    end
+
+    it "then a negative assertion will pass if the second qualifier is not satisfied" do
+      expect {
+        expect(subject).to_not have_been_sent.with_text('Test').and('Other')
+      }.to_not raise_error
+    end
+
+    it "then a negative assertion will fail if both qualifiers are satisfied" do
+      expect {
+        expect(subject).to_not have_been_sent.with_text('Test').and('Email')
+      }.to raise_error.with_message('Expected no emails to be sent with text \'Test\' and \'Email\'.')
+    end
 
   end
+
 
 end
