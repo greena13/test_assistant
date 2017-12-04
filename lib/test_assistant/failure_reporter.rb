@@ -1,27 +1,55 @@
 module TestAssistant
+  # Factory class for generating a failure report summarising the last request and
+  # response sent in a particular test and opening it in a browser. Intended to
+  # aid in debugging and to be toggled on through the use of RSpec tags and configured
+  # using TestAssistant::Configuration#render_failed_responses
+  #
+  # @see TestAssistant::Configuration#render_failed_responses
   class FailureReporter
+    # Base class for generating, saving and opening failure reports. Those classes that
+    # inherit from it provide further customisations to better parse and format different
+    # request and response bodies, depending on their format.
     class SummaryReporter
       attr_accessor :next, :file_extension
 
+      # Creates a new SummaryReport object
+      #
+      # @param [ActionDispatch::Request] request the last request made before the test
+      #   failed
+      # @param [ActionDispatch::TestResponse] response the response to the last request
+      #    made before the test failed
+      # @param [String] extension what file extension should be used when saving the
+      #   failure report
+      # @return [SummaryReport] new summary report object
       def initialize(request, response, extension = file_extension)
         @request, @response, @extension = request, response, extension
       end
 
+      # Writes the failure report to the tmp directory in the root of your Rails
+      # project so that it may be opened for viewing in an appropriate application
+      # depending on the failure report's file extension
+      #
+      # @return void
       def write
         File.open(file_path, 'w') do |file|
           file.write(summary)
         end
       end
 
+      # Opens the failure report file using an application that depends on the failure
+      # report's file extension. Expects that #write has already been called and the
+      # file exists.
+      #
+      # @return void
       def open
         system "open #{file_path}"
       end
 
+      protected
+
       def summary
         @response.body
       end
-
-      protected
 
       def file_path
         @file_path ||= "#{Rails.root}/tmp/#{DateTime.now.to_i}.#{@extension}"
