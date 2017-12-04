@@ -289,9 +289,126 @@ RSpec.describe "eql_json" do
       end
 
     end
-
   end
 
+  context "when comparing complicated objects" do
+
+    let(:expected ) { {
+        "a" => "aa",
+        "b" => "bb",
+        "c" => {
+            "d" => 2,
+            "e" => "ee",
+            "f" => [{
+                "g" => "gg",
+                "h" => "hh",
+            },
+                {
+                    "g" => "g1",
+                    "h" => "h1",
+                }
+            ],
+            "i" => {
+                "j" => "jj",
+                "k" => "kk",
+                "l" => [],
+                "m" => {
+                    "n" => 1,
+                    "o" => "oo",
+                    "p" => {
+                        "q" => "qq"
+                    },
+                    "r" => [],
+                },
+            },
+            "s" => [
+                {
+                    "t" => 179,
+                    "u" => "UU"
+                }
+            ]
+        }
+    } }
+
+    let(:actual) { {
+        "a" => "aa",
+        "b" => "bb",
+        "c" => {
+            "d" => 3,
+            "e" => "ee",
+            "f" => [{
+                "g" => "g1",
+                "h" => "hh",
+            },
+                {
+                    "g" => "g1",
+                    "h" => "h1",
+                    "h2" => "h2"
+                }
+            ],
+            "i" => {
+                "j" => "j2",
+                "k" => "kk",
+                "l" => [2],
+                "m" => {
+                    "o" => "oo",
+                    "p" => {
+                        "q" => "qq"
+                    },
+                    "r" => [],
+                },
+            },
+            "s" => [
+                {
+                    "t" => 179,
+                    "u" => "UU"
+                }
+            ]
+        }
+    } }
+
+    it "then correctly reports the elements that have changed" do
+
+      expect(actual).to eql(actual)
+
+      expect(actual).to_not eql(expected)
+
+      begin
+        expect(actual).to eql_json(expected)
+      rescue RSpec::Expectations::ExpectationNotMetError => e
+
+        expect(e.message).to eql(error_message(expected, actual, {
+          'c.d' => {
+              expected: 2,
+              actual: 3
+          },
+          'c.f[0].g' => {
+              expected: "'gg'",
+              actual: "'g1'"
+          },
+          'c.f[1].h2' => {
+              expected: nil,
+              actual: "'h2'"
+          },
+          'c.i.j' => {
+              expected: "'jj'",
+              actual: "'j2'"
+          },
+          'c.i.l[0]' => {
+              expected: nil,
+              actual: 2
+          },
+          'c.i.m.n' => {
+              expected: 1,
+              actual: nil
+          }
+        }))
+
+      end
+
+    end
+
+  end
 
   private
 
@@ -307,7 +424,6 @@ RSpec.describe "eql_json" do
       message_lines.push("Expected: #{difference[:expected]}\n")
       message_lines.push("Actual: #{difference[:actual]}\n\n")
     end
-
 
     message_lines.join
   end
