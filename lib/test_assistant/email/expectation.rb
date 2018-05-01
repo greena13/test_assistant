@@ -430,7 +430,11 @@ module TestAssistant::Email
     end
 
     def email_body(email)
-      email.parts.first.body.decoded
+      if email.parts.first
+        email.parts.first.body.decoded
+      else
+        email.body.encoded
+      end
     end
 
     def email_matches?(email, assertion, expected)
