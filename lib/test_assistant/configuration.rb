@@ -105,12 +105,17 @@ module TestAssistant
       no_type_filter = !type_filter
 
       @rspec_config.after(:each) do |example|
-        if example.exception
-          if (example.metadata[tag_filter] || no_tag_filter) && (example.metadata[:type] == type_filter || no_type_filter)
-            reporter = FailureReporter.report(request, response)
-            reporter.write
-            reporter.open
-          end
+        next unless example.exception
+
+        metadata = example.metadata
+        next unless (metadata[tag_filter] || no_tag_filter) && (metadata[:type] == type_filter || no_type_filter)
+
+        if metadata[:type] == :feature
+          save_and_open_page
+        else
+          reporter = FailureReporter.report(request, response)
+          reporter.write
+          reporter.open
         end
       end
     end
@@ -153,16 +158,18 @@ module TestAssistant
       no_type_filter = !type_filter
 
       @rspec_config.after(:each) do |example|
-        if example.exception
-          if (example.metadata[tag_filter]) && (example.metadata[:type] == type_filter || no_type_filter)
-            if defined? binding
-              binding.pry
-            elsif defined? byebug
-              byebug
-            else
-              debugger
-            end
-          end
+        next unless example.exception
+
+        metadata = example.metadata
+        next unless (metadata.key?(tag_filter)) && (metadata[:type] == type_filter || no_type_filter)
+
+        # noinspection RubyResolve
+        if defined? binding
+          binding.pry
+        elsif defined? byebug
+          byebug
+        else
+          debugger
         end
       end
     end
