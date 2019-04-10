@@ -22,7 +22,7 @@ module TestAssistant::Email
         from: :from,
         with_subject: :subject,
         with_text: {
-            match: ->(_, email, value){ value.all?{|text| email.has_content?(text) }},
+            match: ->(_, email, value){ value.all?{|text| email.has_text?(text) }},
             actual: ->(_, email){ email.text}
         },
         matching_selector: {
@@ -70,7 +70,7 @@ module TestAssistant::Email
       if @and_scope
         self.send(@and_scope, *arguments)
       else
-        ArugmentError.new("Cannot use and without a proceeding assertion.")
+        ArgumentError.new("Cannot use an and modifier without a proceeding assertion.")
       end
     end
 
@@ -339,8 +339,9 @@ module TestAssistant::Email
               when String, Symbol
                 email.send(matcher)
               when Hash
-                field_description = matcher[:actual_name] if matcher[:actual_name]
                 matcher[:actual].(email, parsed_emails(email))
+              else
+                raise ArgumentError.new("Failure related to an unknown or unsupported email attribute #{@failed_attribute}")
               end
 
           value = value.kind_of?(String) ? "'#{value}'" : value.map{|element| "'#{element}'"}
@@ -422,7 +423,6 @@ module TestAssistant::Email
     def parsed_emails(email)
       @parsed_emails ||= {}
       @parsed_emails[email] ||= parser(email)
-      @parsed_emails[email]
     end
 
     def parser(email)
@@ -438,7 +438,6 @@ module TestAssistant::Email
     end
 
     def email_matches?(email, assertion, expected)
-
       case assertion
         when :to
           (expected & email.send(assertion)).length > 0
@@ -448,7 +447,7 @@ module TestAssistant::Email
           assertion[:match].(email, parsed_emails(email), expected)
         else
           raise RuntimeError.new(
-              "Unsupported assertion mapping '#{assertion_match}' of type #{assertion_match.class.name}"
+              "Unsupported assertion mapping '#{assertion}' of type #{assertion.class.name}"
           )
       end
     end
