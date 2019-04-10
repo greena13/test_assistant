@@ -33,5 +33,9 @@ module TestAssistant::Email
     def have_been_sent
       TestAssistant::Email::Expectation.new
     end
+
+    def open_email
+      TestAssistant::Email::EmailFilter.new
+    end
   end
 end
