@@ -56,9 +56,8 @@ module TestAssistant
     def include_email_helpers(options = {})
       @rspec_config.include Email::Helpers, options
 
-      @rspec_config.after :each, type: :request do
-        # clear emails after every request spec
-        ActionMailer::Base.deliveries = []
+      %i[request feature acceptance].each do |type|
+        @rspec_config.after :each, type: type, &method(:clear_emails)
       end
     end
 
@@ -172,6 +171,13 @@ module TestAssistant
           debugger
         end
       end
+    end
+
+    private
+
+    def clear_emails(_example)
+      # clear emails after every request spec
+      ActionMailer::Base.deliveries = []
     end
   end
 end
