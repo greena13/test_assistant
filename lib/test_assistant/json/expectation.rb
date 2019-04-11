@@ -1,4 +1,3 @@
-require 'capybara/rspec'
 require 'hashdiff'
 
 module TestAssistant::Json

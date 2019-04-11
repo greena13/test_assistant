@@ -1,12 +1,11 @@
 # TestAssistant
 
-RSpec toolbox for writing and diagnosing Ruby on Rails tests, faster - especially emails and JSON APIs.
+RSpec toolbox for writing and diagnosing Ruby on Rails tests, faster.
 
 ## Features
 
 * Light-weight, scoped, lazily executed and composable tool-box, so you only include the features you want to use, when you want to use them with no unnecessary overhead
 * JSON assertion that gives noise-free reports on complex nested structures, so you can find out exactly what has changed with your JSON API without having to manually diff large objects
-* Expressive email assertions that let you succinctly describe when emails should and should not sent
 * Automatic reporting of the context around failing tests, so you don't have to re-run them with additional logging or a debugger
 
 ## Installation
@@ -79,110 +78,7 @@ RSpec.describe 'making some valid request', type: :request do
 end
 ```
 
-## Email expectations
-
-Test Assistant provides a declarative API for describing when emails should be sent and their characteristics.
-
-### Setup
-
-```ruby
-TestAssistant.configure(config) do |ta_config|
-  ta_config.include_email_helpers type: :request
-end
-```
-
-### Clearing emails
-
-Emails can be cleared at any point by calling `clear_emails` in your tests. This is helpful when you are testing a user workflow that may trigger multiple emails.
-
-Emails are automatically cleared between each request spec.
-
-### Email receiver address
-
-It's possible to assert an email was sent to one or more or more addresses using the following format:
-
-```ruby
-expect(email).to have_been_sent.to('user@email.com')
-```
-
-### Email sender address
-
-Similarly, you can assert an email was sent from an address:
-
-```ruby
-expect(email).to have_been_sent.from('user@email.com')
-```
-
-### Email subject
-
-You can assert an email's subject:
-
-```ruby
-expect(email).to have_been_sent.with_subject('Welcome!')
-```
-
-
-### Email body
-
-You can assert the body of an email by text:
-
-```ruby
-expect(email).to have_been_sent.with_text('Welcome, user@email.com')
-```
-
-Or using a selector on the email's HTML:
-
-```ruby
-expect(email).to have_been_sent.with_selector('#password')
-```
-
-Or look for links:
-
-```ruby
-expect(email).to have_been_sent.with_link('www.site.com/onboarding/1')
-```
-
-Or images:
-
-```ruby
-expect(email).to have_been_sent.with_image('www.site.com/assets/images/welcome.png')
-```
-
-### Chaining assertions
-
-You can chain any combination of the above that you want for ultra specific assertions:
-
-
-```ruby
-expect(email).to have_been_sent
-                  .to('user@email.com')
-                  .from('admin@site.com')
-                  .with_subject('Welcome!')
-                  .with_text('Welcome, user@email.com')
-                  .with_selector('#password').and('#username')
-                  .with_link('www.site.com/onboarding/1')
-                  .with_image('www.site.com/assets/images/welcome.png')
-
-```
-
-You can also chain multiple assertions of the the same type with the `and` method:
-
-```ruby
-expect(email).to have_been_sent
-                    .with_text('Welcome, user@email.com').and('Thanks for signing up')
-```
-
-### Asserting emails are NOT sent
-
-The `have_sent_email` assertion works with the negative case as well:
-
-```ruby
-expect(email).to_not have_been_sent.with_text('Secret token')
-```
-
 ## Failure Reporting
-
-
 
 ### Rendering a response context when a test fails
 
@@ -246,7 +142,3 @@ rspec
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
-
-## Inspirations
-
-* [CapybaraEmail](https://github.com/DockYard/capybara-email)
