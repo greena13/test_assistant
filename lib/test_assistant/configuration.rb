@@ -1,5 +1,4 @@
 module TestAssistant
-  autoload :Json, 'test_assistant/json/helpers'
   autoload :FailureReporter, 'test_assistant/failure_reporter'
 
   # Class that provides configuration methods to control what parts of Test Assistant
@@ -16,25 +15,6 @@ module TestAssistant
     # @return [TestAssistant::Configuration] new configuration object
     def initialize(rspec_config)
       @rspec_config = rspec_config
-    end
-
-    # Configures RSpec to include the JSON helpers provided by Test Assistant in the
-    # the test suite's scope
-    #
-    # @see TestAssistant::Json::Helpers
-    # @see RSpec::Core::Configuration#include
-    #
-    # @param [Hash] options RSpec::Core::Configuration#include options
-    # @return void
-    #
-    # @example Include JSON helpers in your RSpec test suite
-    #   RSpec.configure do |config|
-    #     TestAssistant.configure(config) do |ta_config|
-    #       ta_config.include_json_helpers
-    #     end
-    #   end
-    def include_json_helpers(options = {})
-      @rspec_config.include Json::Helpers, options
     end
 
     # Configures under what circumstances a failing test should open a failure report

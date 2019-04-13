@@ -4,7 +4,6 @@ require 'test_assistant/configuration'
 # Utility module for working with RSpec test suites for Rails or similar applications
 #
 # Contains:
-# - Sophisticated JSON matchers and diff failure reports
 # - Rendering and debugging tools for viewing test failures
 #
 # @see https://github.com/greena13/test_assistant Test Assistant Github page
