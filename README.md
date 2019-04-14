@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://svgshare.com/i/CRk.svg" width="200px"><br/>
+  <img src="https://svgshare.com/i/CRk.svg" width="200px" /><br/>
   <h2 align="center">TestAssistant</h2>
 </p>
 
